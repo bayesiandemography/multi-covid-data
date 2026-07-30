@@ -1,0 +1,17 @@
+.DS_Store
+out/
+
+# R session and analysis outputs
+*.rds
+.Rproj
+.RData
+.Rhistory
+.Ruserdata
+.Rproj.user/
+
+# R package build/check byproducts
+*.tar.gz
+*.Rcheck/
+
+# emacs crud
+*~
