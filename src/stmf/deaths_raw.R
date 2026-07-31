@@ -8,8 +8,8 @@ suppressPackageStartupMessages({
 })
 
 cmd_assign(
-  .deaths = "data/covid-deaths/STMFinput-2.zip",
-  .out = "out/covid-deaths/deaths_raw.rds"
+  .deaths = "data/stmf/STMFinput-2.zip",
+  .out = "out/stmf/deaths_raw.rds"
 )
 
 tmpdir <- tempfile("stmf")

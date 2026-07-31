@@ -3,44 +3,44 @@ YEAR_MAX := 2025
 
 .PHONY: all clean
 
-all: out/precovid/deaths_raw.rds \
-     out/precovid/population_raw.rds \
-     out/precovid/e0_per_raw.rds \
-     out/covid-deaths/deaths_raw.rds \
-     out/covid-population/popn_est_raw.rds \
-     out/covid-population/popn_proj_raw.rds
+all: out/hmd/deaths_raw.rds \
+     out/hmd/population_raw.rds \
+     out/hmd/e0_per_raw.rds \
+     out/stmf/deaths_raw.rds \
+     out/wpp/popn_est_raw.rds \
+     out/wpp/popn_proj_raw.rds
 
 
-## pre-covid
+## hmd
 
-out/precovid/deaths_raw.rds: src/precovid/deaths_raw.R \
-  data/precovid/deaths.zip
+out/hmd/deaths_raw.rds: src/hmd/deaths_raw.R \
+  data/hmd/deaths.zip
 	Rscript $^ $@
 
-out/precovid/population_raw.rds: src/precovid/population_raw.R \
-  data/precovid/population.zip
+out/hmd/population_raw.rds: src/hmd/population_raw.R \
+  data/hmd/population.zip
 	Rscript $^ $@
 
-out/precovid/e0_per_raw.rds: src/precovid/e0_per_raw.R \
-  data/precovid/e0_per.zip
-	Rscript $^ $@
-
-
-## covid-deaths
-
-out/covid-deaths/deaths_raw.rds: src/covid-deaths/deaths_raw.R \
-  data/covid-deaths/STMFinput-2.zip
+out/hmd/e0_per_raw.rds: src/hmd/e0_per_raw.R \
+  data/hmd/e0_per.zip
 	Rscript $^ $@
 
 
-## covid-population
+## stmf
 
-out/covid-population/popn_est_raw.rds: src/covid-population/popn_est_raw.R \
-  data/covid-population/WPP2024_PopulationBySingleAgeSex_Medium_1950-2023.gz
+out/stmf/deaths_raw.rds: src/stmf/deaths_raw.R \
+  data/stmf/STMFinput-2.zip
+	Rscript $^ $@
+
+
+## wpp
+
+out/wpp/popn_est_raw.rds: src/wpp/popn_est_raw.R \
+  data/wpp/WPP2024_Population1JanuaryBySingleAgeSex_Medium_1950-2023.gz
 	Rscript $^ $@ --year_min=2015
 
-out/covid-population/popn_proj_raw.rds: src/covid-population/popn_proj_raw.R \
-  data/covid-population/WPP2024_PopulationBySingleAgeSex_Medium_2024-2100.gz
+out/wpp/popn_proj_raw.rds: src/wpp/popn_proj_raw.R \
+  data/wpp/WPP2024_Population1JanuaryBySingleAgeSex_Medium_2024-2100.gz
 	Rscript $^ $@ --year_min=2024 --year_max=2027
 
 

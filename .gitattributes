@@ -1,6 +1,6 @@
-data/covid-deaths/STMFinput-2.zip filter=lfs diff=lfs merge=lfs -text
-data/covid-population/WPP2024_PopulationBySingleAgeSex_Medium_1950-2023.gz filter=lfs diff=lfs merge=lfs -text
-data/covid-population/WPP2024_PopulationBySingleAgeSex_Medium_2024-2100.gz filter=lfs diff=lfs merge=lfs -text
-data/precovid/deaths.zip filter=lfs diff=lfs merge=lfs -text
-data/precovid/e0_per.zip filter=lfs diff=lfs merge=lfs -text
-data/precovid/population.zip filter=lfs diff=lfs merge=lfs -text
+data/stmf/STMFinput-2.zip filter=lfs diff=lfs merge=lfs -text
+data/wpp/WPP2024_Population1JanuaryBySingleAgeSex_Medium_1950-2023.gz filter=lfs diff=lfs merge=lfs -text
+data/wpp/WPP2024_Population1JanuaryBySingleAgeSex_Medium_2024-2100.gz filter=lfs diff=lfs merge=lfs -text
+data/hmd/deaths.zip filter=lfs diff=lfs merge=lfs -text
+data/hmd/e0_per.zip filter=lfs diff=lfs merge=lfs -text
+data/hmd/population.zip filter=lfs diff=lfs merge=lfs -text

@@ -8,10 +8,10 @@ suppressPackageStartupMessages({
 })
 
 cmd_assign(
-  .population = "data/covid-population/WPP2024_PopulationBySingleAgeSex_Medium_2024-2100.gz",
+  .population = "data/wpp/WPP2024_Population1JanuaryBySingleAgeSex_Medium_2024-2100.gz",
   year_min = 2024L,
   year_max = 2027L,
-  .out = "out/covid-population/popn_proj_raw.rds"
+  .out = "out/wpp/popn_proj_raw.rds"
 )
 
 out <- read_csv(

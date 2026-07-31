@@ -8,24 +8,23 @@ suppressPackageStartupMessages({
 })
 
 cmd_assign(
-  .population = "data/precovid/population.zip",
-  .out = "out/precovid/population_raw.rds"
+  .e0_per = "data/hmd/e0_per.zip",
+  .out = "out/hmd/e0_per_raw.rds"
 )
 
-tmpdir <- tempfile("population")
+tmpdir <- tempfile("e0_per")
 dir.create(tmpdir)
 on.exit(unlink(tmpdir, recursive = TRUE), add = TRUE)
 
-unzip(.population, files = "population/Population5/Population5.txt", exdir = tmpdir)
+unzip(.e0_per, files = "e0_per/E0per/E0per.txt", exdir = tmpdir)
 
 out <- read_table(
-  file.path(tmpdir, "population/Population5/Population5.txt"),
+  file.path(tmpdir, "e0_per/E0per/E0per.txt"),
   skip = 2,
   na = ".",
   col_types = cols(
     PopName = col_character(),
-    Year = col_character(),
-    Age = col_character(),
+    Year = col_integer(),
     Female = col_double(),
     Male = col_double(),
     Total = col_double()
@@ -34,16 +33,15 @@ out <- read_table(
   select(
     country = PopName,
     year = Year,
-    age = Age,
     Female,
     Male
   ) |>
   pivot_longer(
     cols = c(Female, Male),
     names_to = "sex",
-    values_to = "count"
+    values_to = "value"
   ) |>
-  select(country, year, sex, age, count)
+  select(country, year, sex, value)
 
 dir.create(dirname(.out), recursive = TRUE, showWarnings = FALSE)
 write_rds(out, file = .out)

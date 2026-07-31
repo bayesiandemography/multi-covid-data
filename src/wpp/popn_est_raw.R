@@ -8,9 +8,9 @@ suppressPackageStartupMessages({
 })
 
 cmd_assign(
-  .population = "data/covid-population/WPP2024_PopulationBySingleAgeSex_Medium_1950-2023.gz",
+  .population = "data/wpp/WPP2024_Population1JanuaryBySingleAgeSex_Medium_1950-2023.gz",
   year_min = 2015L,
-  .out = "out/covid-population/popn_est_raw.rds"
+  .out = "out/wpp/popn_est_raw.rds"
 )
 
 out <- read_csv(

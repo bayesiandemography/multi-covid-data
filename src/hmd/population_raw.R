@@ -8,23 +8,23 @@ suppressPackageStartupMessages({
 })
 
 cmd_assign(
-  .deaths = "data/precovid/deaths.zip",
-  .out = "out/precovid/deaths_raw.rds"
+  .population = "data/hmd/population.zip",
+  .out = "out/hmd/population_raw.rds"
 )
 
-tmpdir <- tempfile("deaths")
+tmpdir <- tempfile("population")
 dir.create(tmpdir)
 on.exit(unlink(tmpdir, recursive = TRUE), add = TRUE)
 
-unzip(.deaths, files = "deaths/Deaths_5x1/Deaths_5x1.txt", exdir = tmpdir)
+unzip(.population, files = "population/Population5/Population5.txt", exdir = tmpdir)
 
 out <- read_table(
-  file.path(tmpdir, "deaths/Deaths_5x1/Deaths_5x1.txt"),
+  file.path(tmpdir, "population/Population5/Population5.txt"),
   skip = 2,
   na = ".",
   col_types = cols(
     PopName = col_character(),
-    Year = col_integer(),
+    Year = col_character(),
     Age = col_character(),
     Female = col_double(),
     Male = col_double(),
