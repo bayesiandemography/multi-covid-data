@@ -8,15 +8,16 @@ suppressPackageStartupMessages({
 })
 
 cmd_assign(
-  .e0_per = "data/hmd/e0_per.zip",
-  .out = "out/hmd/e0_per_raw.rds"
+  .lifeexp = "data/hmd/lifeexp.zip",
+  .out = "out/hmd/lifeexp_raw.rds"
 )
 
-tmpdir <- tempfile("e0_per")
+tmpdir <- tempfile("lifeexp")
 dir.create(tmpdir)
 on.exit(unlink(tmpdir, recursive = TRUE), add = TRUE)
 
-unzip(.e0_per, files = "e0_per/E0per/E0per.txt", exdir = tmpdir)
+# Internal archive layout still uses HMD's e0_per/E0per paths.
+unzip(.lifeexp, files = "e0_per/E0per/E0per.txt", exdir = tmpdir)
 
 out <- read_table(
   file.path(tmpdir, "e0_per/E0per/E0per.txt"),

@@ -9,7 +9,7 @@ suppressPackageStartupMessages({
 
 cmd_assign(
   .population = "data/wpp/WPP2024_Population1JanuaryBySingleAgeSex_Medium_1950-2023.gz",
-  year_min = 2015L,
+  year_min = 2010L,
   .out = "out/wpp/popn_est_raw.rds"
 )
 

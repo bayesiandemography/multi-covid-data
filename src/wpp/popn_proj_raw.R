@@ -9,8 +9,7 @@ suppressPackageStartupMessages({
 
 cmd_assign(
   .population = "data/wpp/WPP2024_Population1JanuaryBySingleAgeSex_Medium_2024-2100.gz",
-  year_min = 2024L,
-  year_max = 2027L,
+  year_max = 2026L,
   .out = "out/wpp/popn_proj_raw.rds"
 )
 
@@ -29,7 +28,6 @@ out <- read_csv(
   filter(
     !is.na(ISO3_code),
     ISO3_code != "",
-    year_min <= Time,
     Time <= year_max
   ) |>
   select(
