@@ -17,8 +17,7 @@ all: out/hmd/deaths.rds \
      out/wpp/population.rds \
      out/figures/fig_population_long.pdf \
      out/figures/fig_population_covid.pdf \
-     out/figures/fig_deaths_long.pdf \
-     out/figures/fig_deaths_covid.pdf
+     out/figures/fig_deaths.pdf
 
 
 ## hmd
@@ -101,15 +100,10 @@ out/figures/fig_population_covid.pdf: src/figures/fig_population.R \
   out/wpp/population.rds
 	Rscript $^ $@ --year_min=2020
 
-out/figures/fig_deaths_long.pdf: src/figures/fig_deaths.R \
+out/figures/fig_deaths.pdf: src/figures/fig_deaths.R \
   out/hmd/deaths.rds \
   out/stmf/deaths.rds
-	Rscript $^ $@ --year_min=$(YEAR_MIN_STMF)
-
-out/figures/fig_deaths_covid.pdf: src/figures/fig_deaths.R \
-  out/hmd/deaths.rds \
-  out/stmf/deaths.rds
-	Rscript $^ $@ --year_min=2020
+	Rscript $^ $@
 
 
 ## clean

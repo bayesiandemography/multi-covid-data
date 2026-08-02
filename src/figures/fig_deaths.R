@@ -13,8 +13,7 @@ suppressPackageStartupMessages({
 cmd_assign(
   .hmd_deaths = "out/hmd/deaths.rds",
   .stmf_deaths = "out/stmf/deaths.rds",
-  year_min = 2020L,
-  .out = "out/figures/fig_deaths_covid.pdf"
+  .out = "out/figures/fig_deaths.pdf"
 )
 
 hmd <- read_rds(.hmd_deaths) |>
@@ -63,7 +62,6 @@ hmd_matched <- unique(stmf$country) |>
 
 joined <- stmf |>
   left_join(hmd_matched, by = c("country", "year", "sex", "age")) |>
-  filter(year >= year_min) |>
   mutate(age = age_set_order(age, interpret_fail = "silent"))
 
 combos <- joined |>

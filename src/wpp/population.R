@@ -19,7 +19,7 @@ out <- bind_rows(
 ) |>
   mutate(
     age = age_set_open_right(age, at = 100L),
-    age = as.ordered(age_coarsen_life(age))
+    age = age_coarsen_life(age)
   ) |>
   group_by(country, year, sex, age) |>
   summarise(count = sum(count, na.rm = TRUE), .groups = "drop") |>

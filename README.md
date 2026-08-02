@@ -4,6 +4,20 @@ Pipeline for assembling multi-country COVID-era mortality data from HMD, STMF, a
 
 <!-- TODO: overview, setup, how to build, data sources, output schema -->
 
+## Large files (Git LFS)
+
+Archives under `data/` (HMD, STMF, and WPP inputs) are stored with
+[Git LFS](https://git-lfs.com/). A normal `git clone` with Git LFS installed
+downloads them automatically (currently about **170 MB** total). To clone the
+code without those payloads:
+
+```bash
+GIT_LFS_SKIP_SMUDGE=1 git clone https://github.com/bayesiandemography/multi-covid-data.git
+```
+
+Then fetch the data later with `git lfs pull` if needed. Without Git LFS, those
+paths appear as small pointer files rather than the real archives.
+
 
 ## Country maps
 
