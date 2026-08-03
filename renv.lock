@@ -93,8 +93,8 @@
     },
     "agetime": {
       "Package": "agetime",
-      "Version": "0.1.5",
-      "Source": "Local",
+      "Version": "0.1.6",
+      "Source": "GitHub",
       "Type": "Package",
       "Title": "Work with Age, Period, and Cohort Labels",
       "Authors@R": "c(person(given = \"John\", family = \"Bryant\", role = c(\"aut\", \"cre\"), email = \"john@bayesiandemography.com\"), person(given = \"Junni\", family = \"Zhang\", role = \"aut\", email = \"junni@bayesiandemography.com\"))",
@@ -123,8 +123,12 @@
       "Config/roxygen2/version": "8.0.0",
       "Author": "John Bryant [aut, cre], Junni Zhang [aut]",
       "Maintainer": "John Bryant <john@bayesiandemography.com>",
-      "RemoteType": "local",
-      "RemoteUrl": "/Users/johnbryant/Documents/git.nosync/agetime"
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteUsername": "bayesiandemography",
+      "RemoteRepo": "agetime",
+      "RemoteRef": "main",
+      "RemoteSha": "fcc9e555a953947b04dd62e6284581ed929a3dad"
     },
     "bit": {
       "Package": "bit",
