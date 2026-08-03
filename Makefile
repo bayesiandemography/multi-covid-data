@@ -15,6 +15,7 @@ all: out/hmd/deaths.rds \
      out/hmd/lifeexp.rds \
      out/stmf/deaths.rds \
      out/wpp/population.rds \
+     out/dataset/population.rds \
      out/figures/fig_population_long.pdf \
      out/figures/fig_population_covid.pdf \
      out/figures/fig_deaths.pdf
@@ -86,6 +87,14 @@ out/wpp/population.rds: src/wpp/population.R \
   out/wpp/popn_est_raw.rds \
   out/wpp/popn_proj_raw.rds
 	Rscript $^ $@
+
+
+## dataset
+
+out/dataset/population.rds: src/dataset/population.R \
+  out/hmd/population.rds \
+  out/wpp/population.rds
+	Rscript $^ $@ --year_min=$(YEAR_MIN) --year_max=$(YEAR_MAX_WPP)
 
 
 ## figures
