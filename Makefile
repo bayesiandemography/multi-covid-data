@@ -17,7 +17,8 @@ all: out/datasets_final/data_fit.rds \
      out/figures/fig_population_long.pdf \
      out/figures/fig_population_covid.pdf \
      out/figures/fig_deaths.pdf \
-     out/figures/fig_death_rates_fit.pdf
+     out/figures/fig_death_rates_fit.pdf \
+     out/figures/fig_newdata_exposure.pdf
 
 
 ## hmd
@@ -144,6 +145,11 @@ out/figures/fig_deaths.pdf: src/figures/fig_deaths.R \
 
 out/figures/fig_death_rates_fit.pdf: src/figures/fig_death_rates_fit.R \
   out/datasets_final/data_fit.rds
+	Rscript $^ $@
+
+out/figures/fig_newdata_exposure.pdf: src/figures/fig_newdata_exposure.R \
+  out/datasets_final/newdata_nonscaled.rds \
+  out/datasets_final/newdata_scaled.rds
 	Rscript $^ $@
 
 
