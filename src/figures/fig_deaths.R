@@ -1,68 +1,21 @@
 command::use_renv()
 
 suppressPackageStartupMessages({
-  library(agetime)
   library(command)
   library(dplyr)
   library(ggplot2)
-  library(purrr)
   library(readr)
   library(tidyr)
 })
 
 cmd_assign(
-  .hmd_deaths = "out/hmd/deaths.rds",
-  .stmf_deaths = "out/stmf/deaths.rds",
+  .deaths = "out/figures/vals_deaths.rds",
+  year_min = 2000L,
   .out = "out/figures/fig_deaths.pdf"
 )
 
-hmd <- read_rds(.hmd_deaths) |>
-  mutate(age = as.character(age)) |>
-  select(country, year, sex, age, count_hmd = count)
-
-stmf <- read_rds(.stmf_deaths) |>
-  select(country, year, sex, age, count_stmf = count)
-
-# Coarsen HMD life-table ages into each country's STMF age bands.
-hmd_to_stmf <- function(country_i) {
-  stmf_ages <- stmf |>
-    filter(country == country_i) |>
-    pull(age) |>
-    unique()
-  hmd_ages <- hmd |>
-    filter(country == country_i) |>
-    pull(age) |>
-    unique()
-  if (length(hmd_ages) == 0L || length(stmf_ages) == 0L) {
-    return(NULL)
-  }
-
-  mapping <- age_mapping(
-    labels_x = hmd_ages,
-    labels_y = stmf_ages,
-    relation = "is-contained-in",
-    interpret_fail = "silent"
-  ) |>
-    filter(!is.na(x), !is.na(y))
-
-  if (nrow(mapping) == 0L) {
-    return(NULL)
-  }
-
-  hmd |>
-    filter(country == country_i) |>
-    inner_join(mapping, by = c("age" = "x"), relationship = "many-to-many") |>
-    group_by(country, year, sex, age = y) |>
-    summarise(count_hmd = sum(count_hmd, na.rm = TRUE), .groups = "drop")
-}
-
-hmd_matched <- unique(stmf$country) |>
-  map(hmd_to_stmf) |>
-  list_rbind()
-
-joined <- stmf |>
-  left_join(hmd_matched, by = c("country", "year", "sex", "age")) |>
-  mutate(age = age_set_order(age, interpret_fail = "silent"))
+joined <- read_rds(.deaths) |>
+  filter(year >= year_min)
 
 combos <- joined |>
   distinct(country, sex) |>
@@ -87,8 +40,10 @@ for (i in seq_len(nrow(combos))) {
 
   p <- ggplot(data_i, aes(x = year, y = count, colour = source)) +
     facet_wrap(vars(age), scales = "free_y") +
+    geom_vline(xintercept = 2020, linewidth = 0.3, colour = "grey50") +
     geom_line(linewidth = 0.4) +
     scale_colour_manual(values = c(HMD = "black", STMF = "darkorange")) +
+    expand_limits(y = 0) +
     labs(
       title = paste(country_i, sex_i, sep = " - "),
       x = "Year",

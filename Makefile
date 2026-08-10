@@ -1,6 +1,6 @@
 YEAR_MIN := 1970
 YEAR_MAX := 2025
-YEAR_REQUIRED_HMD := 2020
+YEAR_REQUIRED_HMD := 2019
 YEAR_MIN_WPP := 2000
 YEAR_MAX_WPP := 2026
 YEAR_REQUIRED_STMF := 2025
@@ -10,15 +10,12 @@ YEAR_MAX_STMF := 2025
 
 .PHONY: all clean
 
-all: out/datasets_final/data_fit.rds \
-     out/datasets_final/newdata_nonscaled.rds \
-     out/datasets_final/newdata_scaled.rds \
-     out/datasets_final/deaths_observed.rds \
-     out/figures/fig_population_long.pdf \
-     out/figures/fig_population_covid.pdf \
+all: out/datasets_final/data_fit.csv \
+     out/datasets_final/newdata_nonscaled.csv \
+     out/datasets_final/newdata_scaled.csv \
+     out/figures/fig_population.pdf \
      out/figures/fig_deaths.pdf \
-     out/figures/fig_death_rates_fit.pdf \
-     out/figures/fig_newdata_exposure.pdf
+     out/figures/fig_death_rates.pdf
 
 
 ## hmd
@@ -108,49 +105,44 @@ out/shared/exposure.rds: src/shared/exposure.R \
 
 ## datasets_final
 
-out/datasets_final/data_fit.rds: src/datasets_final/data_fit.R \
+out/datasets_final/data_fit.csv: src/datasets_final/data_fit.R \
   out/shared/deaths.rds \
   out/shared/exposure.rds
 	Rscript $^ $@
 
-out/datasets_final/newdata_nonscaled.rds: src/datasets_final/newdata_nonscaled.R \
+out/datasets_final/newdata_nonscaled.csv: src/datasets_final/newdata_nonscaled.R \
   out/shared/exposure.rds
 	Rscript $^ $@
 
-out/datasets_final/newdata_scaled.rds: src/datasets_final/newdata_scaled.R \
+out/datasets_final/newdata_scaled.csv: src/datasets_final/newdata_scaled.R \
   out/shared/exposure.rds
-	Rscript $^ $@
-
-out/datasets_final/deaths_observed.rds: src/datasets_final/deaths_observed.R \
-  out/shared/deaths.rds
 	Rscript $^ $@
 
 
 ## figures
 
-out/figures/fig_population_long.pdf: src/figures/fig_population.R \
-  out/hmd/population.rds \
-  out/wpp/population.rds
-	Rscript $^ $@ --year_min=$(YEAR_MIN_WPP)
+out/figures/vals_population.rds: src/figures/vals_population.R \
+  out/shared/population.rds
+	Rscript $^ $@
 
-out/figures/fig_population_covid.pdf: src/figures/fig_population.R \
-  out/hmd/population.rds \
-  out/wpp/population.rds
-	Rscript $^ $@ --year_min=2020
-
-out/figures/fig_deaths.pdf: src/figures/fig_deaths.R \
+out/figures/vals_deaths.rds: src/figures/vals_deaths.R \
   out/hmd/deaths.rds \
   out/stmf/deaths.rds
-	Rscript $^ $@
+	Rscript $^ $@ --year_min=$(YEAR_MIN) --year_max=$(YEAR_MAX_STMF)
 
-out/figures/fig_death_rates_fit.pdf: src/figures/fig_death_rates_fit.R \
-  out/datasets_final/data_fit.rds
-	Rscript $^ $@
+out/figures/fig_population.pdf: src/figures/fig_population.R \
+  out/figures/vals_population.rds
+	Rscript $^ $@ --year_min=$(YEAR_MIN_WPP)
 
-out/figures/fig_newdata_exposure.pdf: src/figures/fig_newdata_exposure.R \
-  out/datasets_final/newdata_nonscaled.rds \
-  out/datasets_final/newdata_scaled.rds
-	Rscript $^ $@
+out/figures/fig_deaths.pdf: src/figures/fig_deaths.R \
+  out/figures/vals_deaths.rds
+	Rscript $^ $@ --year_min=$(YEAR_MIN_WPP)
+
+out/figures/fig_death_rates.pdf: src/figures/fig_death_rates.R \
+  out/figures/vals_deaths.rds \
+  out/datasets_final/data_fit.csv \
+  out/datasets_final/newdata_scaled.csv
+	Rscript $^ $@ --year_min=$(YEAR_MIN_WPP) --year_max=$(YEAR_MAX_STMF)
 
 
 ## clean

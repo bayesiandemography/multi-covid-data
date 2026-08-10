@@ -10,7 +10,7 @@ cmd_assign(
   .deaths_raw = "out/hmd/deaths_raw.rds",
   .countries = "data/hmd/countries.csv",
   .out = "out/hmd/countries.rds",
-  year_required = 2020L
+  year_required = 2019L
 )
 
 map <- read_csv(

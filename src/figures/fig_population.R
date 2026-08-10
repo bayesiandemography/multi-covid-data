@@ -9,25 +9,14 @@ suppressPackageStartupMessages({
 })
 
 cmd_assign(
-  .hmd_population = "out/hmd/population.rds",
-  .wpp_population = "out/wpp/population.rds",
-  year_min = 2020L,
-  .out = "out/figures/fig_population_covid.pdf"
+  .population = "out/figures/vals_population.rds",
+  year_min = 2000L,
+  .out = "out/figures/fig_population.pdf"
 )
 
-hmd <- read_rds(.hmd_population) |>
-  filter(grepl("^[0-9]+$", year)) |>
-  mutate(year = as.integer(year)) |>
-  select(country, year, sex, age, count_hmd = count)
-
-# WPP Population1January files store counts in thousands.
-wpp <- read_rds(.wpp_population) |>
-  mutate(count_wpp = count * 1000) |>
-  select(country, year, sex, age, count_wpp)
-
-joined <- hmd |>
-  left_join(wpp, by = c("country", "year", "sex", "age")) |>
-  filter(year >= year_min)
+joined <- read_rds(.population) |>
+  filter(year >= year_min) |>
+  select(country, year, sex, age, count_hmd, count_wpp)
 
 combos <- joined |>
   distinct(country, sex) |>
@@ -52,8 +41,10 @@ for (i in seq_len(nrow(combos))) {
 
   p <- ggplot(data_i, aes(x = year, y = count, colour = source)) +
     facet_wrap(vars(age), scales = "free_y") +
+    geom_vline(xintercept = 2020, linewidth = 0.3, colour = "grey50") +
     geom_line(linewidth = 0.4) +
     scale_colour_manual(values = c(HMD = "black", WPP = "darkorange")) +
+    expand_limits(y = 0) +
     labs(
       title = paste(country_i, sex_i, sep = " - "),
       x = "Year",
