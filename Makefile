@@ -13,6 +13,7 @@ YEAR_MAX_STMF := 2025
 all: out/datasets_final/data_fit.csv \
      out/datasets_final/newdata_nonscaled.csv \
      out/datasets_final/newdata_scaled.csv \
+     out/datasets_final/deaths_observed.csv \
      out/figures/fig_population.pdf \
      out/figures/fig_deaths.pdf \
      out/figures/fig_death_rates.pdf
@@ -116,6 +117,10 @@ out/datasets_final/newdata_nonscaled.csv: src/datasets_final/newdata_nonscaled.R
 
 out/datasets_final/newdata_scaled.csv: src/datasets_final/newdata_scaled.R \
   out/shared/exposure.rds
+	Rscript $^ $@
+
+out/datasets_final/deaths_observed.csv: src/datasets_final/deaths_observed.R \
+  out/shared/deaths.rds
 	Rscript $^ $@
 
 

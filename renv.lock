@@ -93,7 +93,7 @@
     },
     "agetime": {
       "Package": "agetime",
-      "Version": "0.1.6",
+      "Version": "0.1.7",
       "Source": "GitHub",
       "Type": "Package",
       "Title": "Work with Age, Period, and Cohort Labels",
@@ -120,7 +120,7 @@
       "URL": "https://bayesiandemography.github.io/agetime/",
       "VignetteBuilder": "knitr",
       "Roxygen": "list(markdown = TRUE)",
-      "Config/roxygen2/version": "8.0.0",
+      "Config/roxygen2/version": "8.1.0",
       "Author": "John Bryant [aut, cre], Junni Zhang [aut]",
       "Maintainer": "John Bryant <john@bayesiandemography.com>",
       "RemoteType": "github",
@@ -128,7 +128,7 @@
       "RemoteUsername": "bayesiandemography",
       "RemoteRepo": "agetime",
       "RemoteRef": "main",
-      "RemoteSha": "fcc9e555a953947b04dd62e6284581ed929a3dad"
+      "RemoteSha": "799a02fd0d342d8226093cd61c4f90e91d07b365"
     },
     "bit": {
       "Package": "bit",

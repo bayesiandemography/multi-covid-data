@@ -16,84 +16,43 @@ cmd_assign(
   .out = "out/shared/deaths.rds"
 )
 
-drop_containing_parents <- function(labels, lo, hi) {
-  keep <- rep(TRUE, length(labels))
-  for (i in seq_along(labels)) {
-    for (j in seq_along(labels)) {
-      if (i == j) {
-        next
-      }
-      child <- lo[j] >= lo[i] &&
-        hi[j] <= hi[i] &&
-        (lo[j] > lo[i] || hi[j] < hi[i])
-      if (child) {
-        keep[i] <- FALSE
-        break
-      }
-    }
+# Drop closed ages that overlap an open-right age (e.g. 95-99 with 95+).
+# age_is_subtotal() only removes groups fully covered by others; an open
+# group is not a subtotal unless finer ages cover its whole range.
+drop_closed_overlapping_open <- function(labels) {
+  labels <- unique(as.character(labels))
+  open <- labels[age_is_open_right(labels, interpret_fail = "silent")]
+  closed <- setdiff(labels, open)
+  if (length(open) == 0L || length(closed) == 0L) {
+    return(labels)
   }
-  keep
+
+  overlap <- age_mapping(
+    labels_x = closed,
+    labels_y = open,
+    relation = "overlaps-with",
+    interpret_fail = "silent"
+  ) |>
+    filter(!is.na(x), !is.na(y), x != y)
+
+  setdiff(labels, unique(overlap$x))
 }
 
-# Prefer the most detailed STMF age set that still forms a complete
-# partition ending in an open age group (highest open lower bound first).
-finest_stmf_ages <- function(labels) {
+stmf_age_levels <- function(labels) {
   labels <- unique(as.character(labels))
-  labels <- labels[!is.na(labels) & nzchar(labels) & !grepl("^UNK", labels)]
-  lo <- as.numeric(age_lower(labels, interpret_fail = "silent"))
-  hi <- as.numeric(age_upper(labels, interpret_fail = "silent"))
-  ok <- !is.na(lo) & !is.na(hi)
-  labels <- labels[ok]
-  lo <- lo[ok]
-  hi <- hi[ok]
-  open <- is.infinite(hi)
-  if (!any(open)) {
-    stop(
-      "no open-right age group in STMF labels: ",
-      paste(labels, collapse = ", "),
-      call. = FALSE
-    )
-  }
+  labels <- labels[
+    !is.na(labels) &
+      nzchar(labels) &
+      !age_is_missing(labels, interpret_fail = "silent") &
+      !age_is_total(labels, interpret_fail = "silent")
+  ]
 
-  open_idx <- which(open)
-  open_order <- open_idx[order(lo[open_idx], decreasing = TRUE)]
-  closed_idx <- which(!open)
-  if (length(closed_idx) > 0L) {
-    ck <- drop_containing_parents(
-      labels[closed_idx],
-      lo[closed_idx],
-      hi[closed_idx]
-    )
-    closed_idx <- closed_idx[ck]
-  }
+  keep <- labels[
+    !age_is_subtotal(labels, interpret_fail = "silent")
+  ]
+  keep <- drop_closed_overlapping_open(keep)
 
-  for (oi in open_order) {
-    L <- lo[oi]
-    below <- closed_idx[hi[closed_idx] <= L]
-    cand_lab <- c(labels[below], labels[oi])
-    cand_lo <- c(lo[below], lo[oi])
-    cand_hi <- c(hi[below], hi[oi])
-    keep <- drop_containing_parents(cand_lab, cand_lo, cand_hi)
-    keep[length(keep)] <- TRUE
-    cand_lab <- cand_lab[keep]
-    diag <- age_diagnose(
-      cand_lab,
-      has_zero = TRUE,
-      has_open_right = TRUE,
-      no_gap = TRUE,
-      no_overlap = TRUE,
-      interpret_fail = "silent"
-    )
-    if (isTRUE(diag$ok)) {
-      return(age_set_order(cand_lab, interpret_fail = "silent"))
-    }
-  }
-
-  stop(
-    "no complete finest STMF age classification among: ",
-    paste(labels, collapse = ", "),
-    call. = FALSE
-  )
+  age_set_order(keep, interpret_fail = "silent")
 }
 
 assert_stmf_ages <- function(labels, country, year, sex) {
@@ -160,7 +119,7 @@ stmf_out <- stmf_fill_years |>
       year,
       \(country_i, year_i) {
         as.character(
-          finest_stmf_ages(
+          stmf_age_levels(
             stmf$age[stmf$country == country_i & stmf$year == year_i]
           )
         )
