@@ -8,7 +8,7 @@ suppressPackageStartupMessages({
 
 cmd_assign(
   .exposure = "out/shared/exposure.rds",
-  .out = "out/datasets_final/newdata_scaled.csv"
+  .out = "out/datasets_final/newdata_scaled.zip"
 )
 
 out <- read_rds(.exposure) |>
@@ -19,4 +19,10 @@ out <- read_rds(.exposure) |>
   arrange(country, year, sex, age)
 
 dir.create(dirname(.out), recursive = TRUE, showWarnings = FALSE)
-write_csv(out, file = .out)
+csv_path <- file.path(tempdir(), sub("\\.zip$", ".csv", basename(.out)))
+write_csv(out, csv_path)
+unlink(.out)
+if (utils::zip(.out, csv_path, flags = "-j") != 0L) {
+  stop("zip failed: ", .out, call. = FALSE)
+}
+unlink(csv_path)

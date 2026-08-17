@@ -8,12 +8,12 @@ WEEK_REQUIRED_STMF := 52
 YEAR_MIN_STMF := 2020
 YEAR_MAX_STMF := 2025
 
-.PHONY: all clean
+.PHONY: all clean .COPY
 
-all: out/datasets_final/data_fit.csv \
-     out/datasets_final/newdata_nonscaled.csv \
-     out/datasets_final/newdata_scaled.csv \
-     out/datasets_final/deaths_observed.csv \
+all: out/datasets_final/data_fit.zip \
+     out/datasets_final/newdata_nonscaled.zip \
+     out/datasets_final/newdata_scaled.zip \
+     out/datasets_final/deaths_observed.zip \
      out/figures/fig_population.pdf \
      out/figures/fig_deaths.pdf \
      out/figures/fig_death_rates.pdf
@@ -106,22 +106,31 @@ out/shared/exposure.rds: src/shared/exposure.R \
 
 ## datasets_final
 
-out/datasets_final/data_fit.csv: src/datasets_final/data_fit.R \
+out/datasets_final/data_fit.zip: src/datasets_final/data_fit.R \
   out/shared/deaths.rds \
   out/shared/exposure.rds
 	Rscript $^ $@
 
-out/datasets_final/newdata_nonscaled.csv: src/datasets_final/newdata_nonscaled.R \
+out/datasets_final/newdata_nonscaled.zip: src/datasets_final/newdata_nonscaled.R \
   out/shared/exposure.rds
 	Rscript $^ $@
 
-out/datasets_final/newdata_scaled.csv: src/datasets_final/newdata_scaled.R \
+out/datasets_final/newdata_scaled.zip: src/datasets_final/newdata_scaled.R \
   out/shared/exposure.rds
 	Rscript $^ $@
 
-out/datasets_final/deaths_observed.csv: src/datasets_final/deaths_observed.R \
+out/datasets_final/deaths_observed.zip: src/datasets_final/deaths_observed.R \
   out/shared/deaths.rds
 	Rscript $^ $@
+
+# Copy zipped analysis products into the sibling multi-covid-model data directory.
+.COPY: out/datasets_final/data_fit.zip \
+       out/datasets_final/newdata_nonscaled.zip \
+       out/datasets_final/newdata_scaled.zip \
+       out/datasets_final/deaths_observed.zip
+	mkdir -p ../multi-covid-model/data
+	cp out/datasets_final/*.zip ../multi-covid-model/data/
+	rm -f ../multi-covid-model/data/*.csv
 
 
 ## figures
@@ -145,8 +154,8 @@ out/figures/fig_deaths.pdf: src/figures/fig_deaths.R \
 
 out/figures/fig_death_rates.pdf: src/figures/fig_death_rates.R \
   out/figures/vals_deaths.rds \
-  out/datasets_final/data_fit.csv \
-  out/datasets_final/newdata_scaled.csv
+  out/datasets_final/data_fit.zip \
+  out/datasets_final/newdata_scaled.zip
 	Rscript $^ $@ --year_min=$(YEAR_MIN_WPP) --year_max=$(YEAR_MAX_STMF)
 
 

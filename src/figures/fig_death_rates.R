@@ -12,8 +12,8 @@ suppressPackageStartupMessages({
 
 cmd_assign(
   .deaths = "out/figures/vals_deaths.rds",
-  .data_fit = "out/datasets_final/data_fit.csv",
-  .newdata_scaled = "out/datasets_final/newdata_scaled.csv",
+  .data_fit = "out/datasets_final/data_fit.zip",
+  .newdata_scaled = "out/datasets_final/newdata_scaled.zip",
   year_min = 2000L,
   year_max = 2025L,
   .out = "out/figures/fig_death_rates.pdf"

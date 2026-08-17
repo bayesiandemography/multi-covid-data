@@ -37,6 +37,19 @@ read_stmf <- function(path) {
   read_csv(path, show_col_types = FALSE) |>
     rename_with(~ sub("^\ufeff", "", .x)) |>
     filter(Sex %in% c("m", "f"), Age != "TOT") |>
+    # DEUTNP 2025 females: Age 95 miscoded as AgeInterval "5" (→ 95-99)
+    # instead of "+" (→ 95+); males and both-sex use "+" in the same weeks.
+    mutate(
+      AgeInterval = if_else(
+        PopCode == "DEUTNP" &
+          Year == 2025 &
+          Sex == "f" &
+          Age == "95" &
+          AgeInterval == "5",
+        "+",
+        AgeInterval
+      )
+    ) |>
     transmute(
       country = PopCode,
       year = as.integer(Year),

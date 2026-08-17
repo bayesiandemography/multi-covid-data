@@ -4,8 +4,9 @@ Pipeline for assembling multi-country COVID-era mortality data from the
 [Human Mortality Database](https://www.mortality.org/) (HMD), the
 [Short-Term Mortality Fluctuations](https://www.mortality.org/Data/STMF)
 data series (STMF), and UN World Population Prospects (WPP) population
-counts. The main analysis outputs are CSV files under `out/datasets_final/`;
-PDF figures under `out/figures/` check population, deaths, and death rates.
+counts. The main analysis outputs are zip files under `out/datasets_final/`
+(each archive holds one CSV); PDF figures under `out/figures/` check
+population, deaths, and death rates.
 
 ## Overview
 
@@ -40,16 +41,17 @@ make
 
 | Command | Effect |
 |---------|--------|
-| `make` / `make all` | Build analysis CSVs and validation figures |
+| `make` / `make all` | Build analysis zips and validation figures |
+| `make .COPY` | Copy `out/datasets_final/*.zip` to `../multi-covid-model/data/` |
 | `make clean` | Delete `out/` and recreate an empty `out/` |
 | `make out/path/to/target` | Rebuild one target and its dependencies |
 
 `make all` produces:
 
-- `out/datasets_final/data_fit.csv`
-- `out/datasets_final/newdata_nonscaled.csv`
-- `out/datasets_final/newdata_scaled.csv`
-- `out/datasets_final/deaths_observed.csv`
+- `out/datasets_final/data_fit.zip`
+- `out/datasets_final/newdata_nonscaled.zip`
+- `out/datasets_final/newdata_scaled.zip`
+- `out/datasets_final/deaths_observed.zip`
 - `out/figures/fig_population.pdf`
 - `out/figures/fig_deaths.pdf`
 - `out/figures/fig_death_rates.pdf`
@@ -64,7 +66,7 @@ built as dependencies and are not listed in `all`.
 data/{hmd,stmf,wpp}/     versioned inputs (+ country CSVs)
 src/{hmd,stmf,wpp}/      source extracts and cleaning
 src/shared/              combined population, deaths, exposure
-src/datasets_final/      analysis CSVs
+src/datasets_final/      analysis zips (one CSV each)
 src/figures/             validation plots (+ vals_* helpers)
 out/                     all derived artefacts (gitignored)
 ```
@@ -185,14 +187,15 @@ has no exposure row.
 
 ## Analysis products
 
-Files in `out/datasets_final/` (the modelling-facing deliverables):
+Files in `out/datasets_final/` (the modelling-facing deliverables; each `.zip`
+contains one CSV that `readr::read_csv()` can read directly):
 
 | file | Years | Columns | Notes |
 |------|-------|---------|--------|
-| `data_fit.csv` | `< 2020` | `country`, `year`, `sex`, `age`, `deaths`, `exposure` | Deaths joined to nonscaled exposure; deaths rounded |
-| `newdata_nonscaled.csv` | `≥ 2020` | `country`, `year`, `sex`, `age`, `exposure` | From `exposure_nonscaled` |
-| `newdata_scaled.csv` | `≥ 2020` | `country`, `year`, `sex`, `age`, `exposure` | From `exposure_scaled` |
-| `deaths_observed.csv` | `≥ 2020` | `country`, `year`, `sex`, `age`, `deaths` | From shared deaths (HMD preferred, else STMF) |
+| `data_fit.zip` | `< 2020` | `country`, `year`, `sex`, `age`, `deaths`, `exposure` | Deaths joined to nonscaled exposure; deaths rounded |
+| `newdata_nonscaled.zip` | `≥ 2020` | `country`, `year`, `sex`, `age`, `exposure` | From `exposure_nonscaled` |
+| `newdata_scaled.zip` | `≥ 2020` | `country`, `year`, `sex`, `age`, `exposure` | From `exposure_scaled` |
+| `deaths_observed.zip` | `≥ 2020` | `country`, `year`, `sex`, `age`, `deaths` | From shared deaths (HMD preferred, else STMF) |
 
 ## Validation figures
 
@@ -232,6 +235,15 @@ HMD study countries, so ISR also has no scaled exposure for rate figures.
 By contrast, Greece (`GRC`) and Slovenia (`SVN`) pass the 2019 HMD gate
 (HMD deaths through 2019) and are included even though their HMD series stop
 before 2020.
+
+## Data corrections
+
+Corrections applied when reading source files (inputs under `data/` are left
+unchanged):
+
+| Source | Scope | Issue | Fix |
+|--------|-------|-------|-----|
+| STMF | `DEUTNP`, Female, 2025, Age `95` | All weeks use `AgeInterval = "5"` (labelled `95-99`) while males and both-sex use `"+"` (`95+`) | In `src/stmf/deaths_raw.R`, remap that interval to `"+"` before building age labels |
 
 ## Large files (Git LFS)
 
