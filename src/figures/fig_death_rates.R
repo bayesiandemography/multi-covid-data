@@ -12,8 +12,7 @@ suppressPackageStartupMessages({
 
 cmd_assign(
   .deaths = "out/figures/vals_deaths.rds",
-  .data_fit = "out/datasets_final/data_fit.zip",
-  .newdata_scaled = "out/datasets_final/newdata_scaled.zip",
+  .exposure = "out/exposure.rds",
   year_min = 2000L,
   year_max = 2025L,
   .out = "out/figures/fig_death_rates.pdf"
@@ -23,34 +22,10 @@ deaths <- read_rds(.deaths) |>
   filter(year_min <= year, year <= year_max) |>
   mutate(age = as.character(age))
 
-# Pre-2020 exposure from data_fit; 2020+ from newdata_scaled.
-exposure <- bind_rows(
-  read_csv(
-    .data_fit,
-    col_types = cols(
-      country = col_character(),
-      year = col_integer(),
-      sex = col_character(),
-      age = col_character(),
-      deaths = col_double(),
-      exposure = col_double()
-    )
-  ) |>
-    filter(year_min <= year, year < 2020L) |>
-    select(country, year, sex, age, exposure),
-  read_csv(
-    .newdata_scaled,
-    col_types = cols(
-      country = col_character(),
-      year = col_integer(),
-      sex = col_character(),
-      age = col_character(),
-      exposure = col_double()
-    )
-  ) |>
-    filter(year <= year_max) |>
-    select(country, year, sex, age, exposure)
-)
+exposure <- read_rds(.exposure) |>
+  filter(year_min <= year, year <= year_max) |>
+  mutate(age = as.character(age)) |>
+  select(country, year, sex, age, exposure)
 
 collapse_exposure <- function(country_i, year_i) {
   deaths_i <- deaths |>

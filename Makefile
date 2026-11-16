@@ -10,10 +10,7 @@ YEAR_MAX_STMF := 2025
 
 .PHONY: all clean .COPY
 
-all: out/datasets_final/data_fit.zip \
-     out/datasets_final/newdata_nonscaled.zip \
-     out/datasets_final/newdata_scaled.zip \
-     out/datasets_final/deaths_observed.zip \
+all: out/data.csv.zip \
      out/figures/fig_population.pdf \
      out/figures/fig_deaths.pdf \
      out/figures/fig_death_rates.pdf
@@ -87,56 +84,38 @@ out/wpp/population.rds: src/wpp/population.R \
 	Rscript $^ $@
 
 
-## shared
+## combined
 
-out/shared/population.rds: src/shared/population.R \
+out/population.rds: src/population.R \
   out/hmd/population.rds \
   out/wpp/population.rds
 	Rscript $^ $@ --year_min=$(YEAR_MIN) --year_max=$(YEAR_MAX_WPP)
 
-out/shared/deaths.rds: src/shared/deaths.R \
+out/deaths.rds: src/deaths.R \
   out/hmd/deaths.rds \
   out/stmf/deaths.rds
 	Rscript $^ $@ --year_min=$(YEAR_MIN) --year_max=$(YEAR_MAX_STMF)
 
-out/shared/exposure.rds: src/shared/exposure.R \
-  out/shared/population.rds
+out/exposure.rds: src/exposure.R \
+  out/population.rds
 	Rscript $^ $@
 
-
-## datasets_final
-
-out/datasets_final/data_fit.zip: src/datasets_final/data_fit.R \
-  out/shared/deaths.rds \
-  out/shared/exposure.rds
+out/data.csv.zip: src/data.R \
+  out/deaths.rds \
+  out/exposure.rds
 	Rscript $^ $@
 
-out/datasets_final/newdata_nonscaled.zip: src/datasets_final/newdata_nonscaled.R \
-  out/shared/exposure.rds
-	Rscript $^ $@
-
-out/datasets_final/newdata_scaled.zip: src/datasets_final/newdata_scaled.R \
-  out/shared/exposure.rds
-	Rscript $^ $@
-
-out/datasets_final/deaths_observed.zip: src/datasets_final/deaths_observed.R \
-  out/shared/deaths.rds
-	Rscript $^ $@
-
-# Copy zipped analysis products into the sibling multi-covid-model data directory.
-.COPY: out/datasets_final/data_fit.zip \
-       out/datasets_final/newdata_nonscaled.zip \
-       out/datasets_final/newdata_scaled.zip \
-       out/datasets_final/deaths_observed.zip
+# Copy the analysis product into the sibling multi-covid-model data directory.
+.COPY: out/data.csv.zip
 	mkdir -p ../multi-covid-model/data
-	cp out/datasets_final/*.zip ../multi-covid-model/data/
+	cp out/data.csv.zip ../multi-covid-model/data/
 	rm -f ../multi-covid-model/data/*.csv
 
 
 ## figures
 
 out/figures/vals_population.rds: src/figures/vals_population.R \
-  out/shared/population.rds
+  out/population.rds
 	Rscript $^ $@
 
 out/figures/vals_deaths.rds: src/figures/vals_deaths.R \
@@ -154,8 +133,7 @@ out/figures/fig_deaths.pdf: src/figures/fig_deaths.R \
 
 out/figures/fig_death_rates.pdf: src/figures/fig_death_rates.R \
   out/figures/vals_deaths.rds \
-  out/datasets_final/data_fit.zip \
-  out/datasets_final/newdata_scaled.zip
+  out/exposure.rds
 	Rscript $^ $@ --year_min=$(YEAR_MIN) --year_max=$(YEAR_MAX)
 
 

@@ -11,7 +11,7 @@ cmd_assign(
   .wpp_population = "out/wpp/population.rds",
   year_min = 1970L,
   year_max = 2026L,
-  .out = "out/shared/population.rds"
+  .out = "out/population.rds"
 )
 
 hmd_raw <- read_rds(.hmd_population)
@@ -71,14 +71,8 @@ out <- joined |>
   left_join(scale_factors, by = c("country", "sex", "age")) |>
   mutate(
     count_wpp_scaled = if_else(!is.na(scale), count_wpp * scale, NA_real_),
-    population_nonscaled = coalesce(count_hmd, count_wpp),
-    population_scaled = coalesce(count_hmd, count_wpp_scaled),
-    source_nonscaled = case_when(
-      !is.na(count_hmd) ~ "hmd",
-      !is.na(count_wpp) ~ "wpp",
-      TRUE ~ NA_character_
-    ),
-    source_scaled = case_when(
+    population = coalesce(count_hmd, count_wpp_scaled),
+    source = case_when(
       !is.na(count_hmd) ~ "hmd",
       !is.na(count_wpp_scaled) ~ "wpp",
       TRUE ~ NA_character_
@@ -91,11 +85,8 @@ out <- joined |>
     age,
     count_hmd,
     count_wpp,
-    count_wpp_scaled,
-    population_nonscaled,
-    population_scaled,
-    source_nonscaled,
-    source_scaled
+    population,
+    source
   ) |>
   arrange(country, year, sex, age)
 

@@ -7,8 +7,8 @@ suppressPackageStartupMessages({
 })
 
 cmd_assign(
-  .population = "out/shared/population.rds",
-  .out = "out/shared/exposure.rds"
+  .population = "out/population.rds",
+  .out = "out/exposure.rds"
 )
 
 out <- read_rds(.population) |>
@@ -16,15 +16,18 @@ out <- read_rds(.population) |>
   arrange(year, .by_group = TRUE) |>
   mutate(
     year_next = lead(year),
-    exposure_nonscaled = if_else(
+    source_next = lead(source),
+    population_next = lead(population),
+    exposure = if_else(
       year_next == year + 1L,
-      0.5 * (population_nonscaled + lead(population_nonscaled)),
+      0.5 * (population + population_next),
       NA_real_
     ),
-    exposure_scaled = if_else(
-      year_next == year + 1L,
-      0.5 * (population_scaled + lead(population_scaled)),
-      NA_real_
+    population_source = case_when(
+      source == "hmd" & source_next == "hmd" ~ "hmd",
+      source == "wpp" & source_next == "wpp" ~ "wpp",
+      !is.na(source) & !is.na(source_next) & source != source_next ~ "mixed",
+      TRUE ~ NA_character_
     )
   ) |>
   filter(!is.na(year_next), year_next == year + 1L) |>
@@ -34,8 +37,8 @@ out <- read_rds(.population) |>
     year,
     sex,
     age,
-    exposure_nonscaled,
-    exposure_scaled
+    exposure,
+    population_source
   ) |>
   arrange(country, year, sex, age)
 

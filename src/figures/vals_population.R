@@ -7,7 +7,7 @@ suppressPackageStartupMessages({
 })
 
 cmd_assign(
-  .population = "out/shared/population.rds",
+  .population = "out/population.rds",
   .out = "out/figures/vals_population.rds"
 )
 
@@ -18,12 +18,7 @@ out <- read_rds(.population) |>
     sex,
     age,
     count_hmd,
-    count_wpp,
-    count_wpp_scaled,
-    population_nonscaled,
-    population_scaled,
-    source_nonscaled,
-    source_scaled
+    count_wpp
   ) |>
   arrange(country, year, sex, age)
 

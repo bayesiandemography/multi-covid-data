@@ -13,7 +13,7 @@ cmd_assign(
   .stmf_deaths = "out/stmf/deaths.rds",
   year_min = 1970L,
   year_max = 2025L,
-  .out = "out/shared/deaths.rds"
+  .out = "out/deaths.rds"
 )
 
 # Drop closed ages that overlap an open-right age (e.g. 95-99 with 95+).
