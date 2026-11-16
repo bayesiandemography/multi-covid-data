@@ -156,7 +156,7 @@ out/figures/fig_death_rates.pdf: src/figures/fig_death_rates.R \
   out/figures/vals_deaths.rds \
   out/datasets_final/data_fit.zip \
   out/datasets_final/newdata_scaled.zip
-	Rscript $^ $@ --year_min=$(YEAR_MIN_WPP) --year_max=$(YEAR_MAX_STMF)
+	Rscript $^ $@ --year_min=$(YEAR_MIN) --year_max=$(YEAR_MAX)
 
 
 ## clean

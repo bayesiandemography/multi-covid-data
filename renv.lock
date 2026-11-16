@@ -93,7 +93,7 @@
     },
     "agetime": {
       "Package": "agetime",
-      "Version": "0.1.7",
+      "Version": "0.1.9",
       "Source": "GitHub",
       "Type": "Package",
       "Title": "Work with Age, Period, and Cohort Labels",
@@ -128,7 +128,7 @@
       "RemoteUsername": "bayesiandemography",
       "RemoteRepo": "agetime",
       "RemoteRef": "main",
-      "RemoteSha": "799a02fd0d342d8226093cd61c4f90e91d07b365"
+      "RemoteSha": "3878fa7c5f332442551af2ac4abb19e14eb68a9c"
     },
     "bit": {
       "Package": "bit",
