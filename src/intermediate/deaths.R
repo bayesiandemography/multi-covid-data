@@ -14,7 +14,7 @@ cmd_assign(
   .nso_deaths = "out/nso/deaths.rds",
   year_min = 1960L,
   year_max = 2025L,
-  .out = "out/deaths.rds"
+  .out = "out/intermediate/deaths.rds"
 )
 
 # Drop closed ages that overlap an open-right age (e.g. 95-99 with 95+).

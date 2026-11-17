@@ -6,13 +6,15 @@ Downloaded: 2026-08-27 (Pacific/Auckland)
 PURPOSE AND SCOPE
 -----------------
 The existing data/deaths_observed.zip was checked country by country. Six
-countries/territories did not extend through 2025. Israel is included
-because its HMD series ends in 2016:
+countries/territories did not extend through 2025 and are used to fill those
+years. Israel's file is kept here as the series that was checked and then
+excluded: from 2017 onwards it has one deaths series with age detail and one
+with sex detail, and no series with both.
 
   Canada       last existing year 2023; missing 2024-2025
   Hong Kong    last existing year 2024; missing 2025
   Ireland      last existing year 2022; missing 2023-2025
-  Israel       HMD deaths end in 2016; added 2026-11-17 for 2017-2025
+  Israel       checked 2026-11-17; not used (no age-by-sex series)
   Japan        last existing year 2024; missing 2025
   South Korea  last existing year 2024; missing 2025
   Taiwan       last existing year 2024; missing 2025
@@ -160,9 +162,10 @@ Agency and dataset:
   and age). p-1.xlsx is the filename supplied by the server. The file on
   the site also contains years outside 2017-2025; it was saved unmodified.
 
-Years supplied:
-  2017-2025. HMD deaths for Israel end in 2016. The workbook's 2026 sheet
-  stops on 2026-10-25 and is not part of this extract.
+Years in the file:
+  The workbook covers 2000 onwards. The 2026 sheet stops on 2026-10-25.
+  Not used in the data file. From 2017 onwards there is one series with
+  age detail and one with sex detail, and no series with both.
 
 Date basis:
   Occurrence, by day of death. Counts are deaths of Israeli residents in

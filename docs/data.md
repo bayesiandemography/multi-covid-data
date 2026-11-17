@@ -14,7 +14,8 @@ These are the rules used to construct `out/data.csv.zip`.
 ## Who is included
 
 - The country list is the HMD study list. A source is kept, renamed, or merged according to `data/hmd/countries.csv`. A blank target drops that source. Merged sources are summed after they share a study code. `data/stmf/countries.csv` uses the same blank-target rule.
-- Belarus (`BLR`), Russia (`RUS`), Ukraine (`UKR`), and Israel (`ISR`) are dropped by a blank target. Belarus, Russia, and Ukraine are dropped because there is no detailed, reliable death data for 2024 and 2025, including from the national statistical agencies. Israel is dropped because HMD deaths end in 2016.
+- Belarus (`BLR`), Russia (`RUS`), and Ukraine (`UKR`) are dropped by a blank target, because there is no detailed, reliable death data for 2024 and 2025, including from the national statistical agencies.
+- Israel (`ISR`) is dropped by a blank target in the HMD and STMF maps. HMD deaths end in 2016. From 2017 onwards the national statistical office publishes one deaths series with age detail and one with sex detail, and no series with both. That series is therefore excluded, and Israel is excluded from the calculations.
 - Greece and Slovenia stay. HMD deaths for both end in 2019.
 - WPP is used only for countries that remain. STMF is used only for countries that pass its own map and have week 52 of the last year. NSO deaths do not add a country that is outside this list.
 

@@ -7,8 +7,8 @@ suppressPackageStartupMessages({
 })
 
 cmd_assign(
-  .population = "out/population.rds",
-  .out = "out/exposure.rds"
+  .population = "out/intermediate/population.rds",
+  .out = "out/intermediate/exposure.rds"
 )
 
 out <- read_rds(.population) |>

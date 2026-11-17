@@ -11,7 +11,7 @@ cmd_assign(
   .wpp_population = "out/wpp/population.rds",
   year_min = 1960L,
   year_max = 2026L,
-  .out = "out/population.rds"
+  .out = "out/intermediate/population.rds"
 )
 
 hmd_raw <- read_rds(.hmd_population)

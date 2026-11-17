@@ -7,9 +7,7 @@ WEEK_REQUIRED_STMF := 52
 .PHONY: all clean .COPY nso
 
 all: out/data.csv.zip \
-     out/figures/fig_population.pdf \
-     out/figures/fig_deaths.pdf \
-     out/figures/fig_death_rates.pdf
+     out/fig_lifeexp.pdf
 
 
 ## hmd
@@ -80,26 +78,35 @@ out/wpp/population.rds: src/wpp/population.R \
 	Rscript $^ $@
 
 
-## combined
+## intermediate
 
-out/population.rds: src/population.R \
+out/intermediate/population.rds: src/intermediate/population.R \
   out/hmd/population.rds \
   out/wpp/population.rds
 	Rscript $^ $@ --year_min=$(YEAR_MIN) --year_max=$(YEAR_MAX_POPULATION)
 
-out/deaths.rds: src/deaths.R \
+out/intermediate/deaths.rds: src/intermediate/deaths.R \
   out/hmd/deaths.rds \
   out/stmf/deaths.rds \
   out/nso/deaths.rds
 	Rscript $^ $@ --year_min=$(YEAR_MIN) --year_max=$(YEAR_MAX)
 
-out/exposure.rds: src/exposure.R \
-  out/population.rds
+out/intermediate/exposure.rds: src/intermediate/exposure.R \
+  out/intermediate/population.rds
+	Rscript $^ $@
+
+out/intermediate/vals_lifeexp.rds: src/intermediate/vals_lifeexp.R \
+  out/data.csv.zip \
+  out/hmd/lifeexp.rds
 	Rscript $^ $@
 
 out/data.csv.zip: src/data.R \
-  out/deaths.rds \
-  out/exposure.rds
+  out/intermediate/deaths.rds \
+  out/intermediate/exposure.rds
+	Rscript $^ $@
+
+out/fig_lifeexp.pdf: src/fig_lifeexp.R \
+  out/intermediate/vals_lifeexp.rds
 	Rscript $^ $@
 
 # Copy the analysis product into the sibling multi-covid-model data directory.
@@ -107,31 +114,6 @@ out/data.csv.zip: src/data.R \
 	mkdir -p ../multi-covid-model/data
 	cp out/data.csv.zip ../multi-covid-model/data/
 	rm -f ../multi-covid-model/data/*.csv
-
-
-## figures
-
-out/figures/vals_population.rds: src/figures/vals_population.R \
-  out/population.rds
-	Rscript $^ $@
-
-out/figures/vals_deaths.rds: src/figures/vals_deaths.R \
-  out/hmd/deaths.rds \
-  out/stmf/deaths.rds
-	Rscript $^ $@ --year_min=$(YEAR_MIN) --year_max=$(YEAR_MAX)
-
-out/figures/fig_population.pdf: src/figures/fig_population.R \
-  out/figures/vals_population.rds
-	Rscript $^ $@ --year_min=$(YEAR_MIN)
-
-out/figures/fig_deaths.pdf: src/figures/fig_deaths.R \
-  out/figures/vals_deaths.rds
-	Rscript $^ $@ --year_min=$(YEAR_MIN)
-
-out/figures/fig_death_rates.pdf: src/figures/fig_death_rates.R \
-  out/figures/vals_deaths.rds \
-  out/exposure.rds
-	Rscript $^ $@ --year_min=$(YEAR_MIN) --year_max=$(YEAR_MAX)
 
 
 ## nso
@@ -147,10 +129,6 @@ out/nso/hong_kong.rds: src/nso/hong_kong.R \
 out/nso/ireland.rds: src/nso/ireland.R \
   data/nso/VSA29.20260827020459.csv \
   data/nso/VSA07.20260827020411.csv
-	Rscript $^ $@
-
-out/nso/israel.rds: src/nso/israel.R \
-  data/nso/p-1.xlsx
 	Rscript $^ $@
 
 out/nso/japan.rds: src/nso/japan.R \
@@ -178,7 +156,6 @@ out/nso/deaths.rds: src/nso/deaths.R \
 nso: out/nso/canada.rds \
      out/nso/hong_kong.rds \
      out/nso/ireland.rds \
-     out/nso/israel.rds \
      out/nso/japan.rds \
      out/nso/korea.rds \
      out/nso/taiwan.rds \

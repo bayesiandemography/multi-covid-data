@@ -7,8 +7,8 @@ suppressPackageStartupMessages({
 })
 
 cmd_assign(
-  .deaths = "out/deaths.rds",
-  .exposure = "out/exposure.rds",
+  .deaths = "out/intermediate/deaths.rds",
+  .exposure = "out/intermediate/exposure.rds",
   .out = "out/data.csv.zip"
 )
 

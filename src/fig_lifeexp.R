@@ -9,13 +9,12 @@ suppressPackageStartupMessages({
 })
 
 cmd_assign(
-  .deaths = "out/figures/vals_deaths.rds",
-  year_min = 1960L,
-  .out = "out/figures/fig_deaths.pdf"
+  .lifeexp = "out/intermediate/vals_lifeexp.rds",
+  .out = "out/fig_lifeexp.pdf"
 )
 
-joined <- read_rds(.deaths) |>
-  filter(year >= year_min)
+joined <- read_rds(.lifeexp) |>
+  filter(is.finite(ex_data), is.finite(ex_hmd))
 
 combos <- joined |>
   distinct(country, sex) |>
@@ -23,11 +22,13 @@ combos <- joined |>
 
 data <- joined |>
   pivot_longer(
-    cols = c(count_hmd, count_stmf),
+    cols = c(ex_hmd, ex_data),
     names_to = "source",
-    values_to = "count"
+    values_to = "life_expectancy"
   ) |>
-  mutate(source = if_else(source == "count_hmd", "HMD", "STMF"))
+  mutate(
+    source = if_else(source == "ex_hmd", "HMD", "Data file")
+  )
 
 dir.create(dirname(.out), recursive = TRUE, showWarnings = FALSE)
 
@@ -38,16 +39,14 @@ for (i in seq_len(nrow(combos))) {
   data_i <- data |>
     filter(country == country_i, sex == sex_i)
 
-  p <- ggplot(data_i, aes(x = year, y = count, colour = source)) +
-    facet_wrap(vars(age), scales = "free_y") +
+  p <- ggplot(data_i, aes(x = year, y = life_expectancy, colour = source)) +
     geom_vline(xintercept = 2020, linewidth = 0.3, colour = "grey50") +
     geom_line(linewidth = 0.4) +
-    scale_colour_manual(values = c(HMD = "black", STMF = "darkorange")) +
-    expand_limits(y = 0) +
+    scale_colour_manual(values = c(HMD = "black", "Data file" = "darkorange")) +
     labs(
       title = paste(country_i, sex_i, sep = " - "),
       x = "Year",
-      y = "Deaths",
+      y = "Life expectancy at birth",
       colour = NULL
     ) +
     theme(

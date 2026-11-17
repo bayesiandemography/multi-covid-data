@@ -5,20 +5,20 @@ Pipeline for assembling multi-country COVID-era mortality data from the
 [Short-Term Mortality Fluctuations](https://www.mortality.org/Data/STMF)
 data series (STMF), and UN World Population Prospects (WPP) population
 counts. The main analysis output is `out/data.csv.zip` (the archive holds
-one CSV). PDF figures under `out/figures/` check population, deaths, and
-death rates.
+one CSV). `out/fig_lifeexp.pdf` compares life expectancy at birth with the
+Human Mortality Database.
 
 ## Overview
 
 - **Inputs:** country-level archives under `data/hmd/`, `data/stmf/`, and
   `data/wpp/` (Git LFS).
 - **Harmonisation:** source pipelines write `out/{hmd,stmf,wpp}/`, then
-  population, deaths, and person-year exposure are written directly under
-  `out/`.
+  population, deaths, and person-year exposure are written under
+  `out/intermediate/`.
 - **Analysis product:** `out/data.csv.zip` holds deaths and scaled exposure
   for every year, with source flags.
-- **Checks:** validation PDFs compare HMD vs WPP population, HMD vs STMF
-  deaths, and HMD vs STMF death rates.
+- **Check:** `out/fig_lifeexp.pdf` compares life expectancy at birth from
+  `data.csv` with the Human Mortality Database.
 
 ## Setup
 
@@ -41,7 +41,7 @@ make
 
 | Command | Effect |
 |---------|--------|
-| `make` / `make all` | Build analysis zips and validation figures |
+| `make` / `make all` | Build `out/data.csv.zip` and `out/fig_lifeexp.pdf` |
 | `make .COPY` | Copy `out/data.csv.zip` to `../multi-covid-model/data/` |
 | `make clean` | Delete `out/` and recreate an empty `out/` |
 | `make out/path/to/target` | Rebuild one target and its dependencies |
@@ -49,27 +49,24 @@ make
 `make all` produces:
 
 - `out/data.csv.zip`
-- `out/figures/fig_population.pdf`
-- `out/figures/fig_deaths.pdf`
-- `out/figures/fig_death_rates.pdf`
+- `out/fig_lifeexp.pdf`
 
-Intermediate objects under `out/hmd/`, `out/stmf/`, and `out/wpp/`, the
-combined files `out/population.rds`, `out/deaths.rds`, and
-`out/exposure.rds`, and figure helpers such as `out/figures/vals_*.rds` are
-built as dependencies and are not listed in `all`.
+Intermediate objects under `out/hmd/`, `out/stmf/`, `out/wpp/`, `out/nso/`,
+and `out/intermediate/` are built as dependencies and are not listed in `all`.
+`out/intermediate/` holds `population.rds`, `deaths.rds`, `exposure.rds`, and
+`vals_lifeexp.rds`.
 
 ## Pipeline layout
 
 ```text
-data/{hmd,stmf,wpp}/     versioned inputs (+ country CSVs)
-src/{hmd,stmf,wpp}/      source extracts and cleaning
-src/population.R         combined population
-src/deaths.R             combined deaths
-src/exposure.R           person-year exposure
-src/data.R               analysis zip (one CSV)
-src/figures/             validation plots (+ vals_* helpers)
-out/                     all derived artefacts (gitignored)
+data/{hmd,stmf,wpp,nso}/          versioned inputs (+ country CSVs)
+src/data.R                        out/data.csv.zip
+src/fig_lifeexp.R                 out/fig_lifeexp.pdf
+src/{hmd,stmf,wpp,nso}/           out/{hmd,stmf,wpp,nso}/
+src/intermediate/                 out/intermediate/
 ```
+
+`out/` holds the derived artefacts and is gitignored. Its directories match `src/`.
 
 ```mermaid
 flowchart LR
@@ -77,6 +74,7 @@ flowchart LR
     HMD[hmd]
     STMF[stmf]
     WPP[wpp]
+    NSO[nso]
   end
   subgraph combined [combined]
     Pop[population]
@@ -84,24 +82,16 @@ flowchart LR
     Exp[exposure]
     Data[data.csv]
   end
-  subgraph figs [figures]
-    FP[fig_population]
-    FD[fig_deaths]
-    FR[fig_death_rates]
-  end
   HMD --> Pop
   WPP --> Pop
   HMD --> Deaths
   STMF --> Deaths
+  NSO --> Deaths
   Pop --> Exp
   Deaths --> Data
   Exp --> Data
-  Pop --> FP
-  HMD --> FD
-  STMF --> FD
-  HMD --> FR
-  STMF --> FR
-  Exp --> FR
+  Data --> Life[fig_lifeexp]
+  HMD --> Life
 ```
 
 ## Data sources
@@ -159,7 +149,7 @@ Only rows with a non-empty `target` are kept. For STMF, sources lacking week
 
 ## Combined series
 
-Built directly under `out/` from the cleaned source pipelines.
+Built under `out/intermediate/` from the cleaned source pipelines.
 
 **Population** (`population.rds`) — Prefer HMD counts. Where HMD is missing,
 use WPP × 1000 scaled to the latest overlapping HMD level by country–sex–age.
@@ -200,12 +190,9 @@ is kept when either series is present.
 
 | PDF | Checks |
 |-----|--------|
-| `fig_population.pdf` | HMD vs WPP population by country–sex, age facets, from `YEAR_MIN` |
-| `fig_deaths.pdf` | HMD vs STMF death counts (HMD coarsened to STMF ages), from `YEAR_MIN` |
-| `fig_death_rates.pdf` | HMD vs STMF rates using scaled exposure from `out/exposure.rds` for every year |
+| `out/fig_lifeexp.pdf` | HMD period life expectancy at birth vs `lifeexp()` applied to `data.csv`, for country–year–sex series with ages 0, 1–4, and five-year groups through an open age of 80 or older |
 
-Figure-only intermediates live under `out/figures/` as `vals_population.rds`
-and `vals_deaths.rds`. They are not part of `data.csv.zip`.
+The values behind the figure are in `out/intermediate/vals_lifeexp.rds`. They are not part of `data.csv.zip`.
 
 ## Makefile parameters
 
@@ -220,7 +207,9 @@ and `vals_deaths.rds`. They are not part of `data.csv.zip`.
 
 Belarus (`BLR`), Russia (`RUS`), Ukraine (`UKR`), and Israel (`ISR`) are excluded from the study. The exclusion is a blank `target` in [`data/hmd/countries.csv`](data/hmd/countries.csv). Russia and Israel are also blank in [`data/stmf/countries.csv`](data/stmf/countries.csv). Belarus and Ukraine are not in the STMF concordance. A blank cell is easy to miss, so the reasons are written here and in [docs/data.md](docs/data.md).
 
-Belarus, Russia, and Ukraine are excluded because there is no detailed, reliable death data for 2024 and 2025, including from the national statistical agencies. HMD deaths end in 2018 for Belarus, 2014 for Russia, and 2013 for Ukraine. Israel is excluded because HMD deaths end in 2016.
+Belarus, Russia, and Ukraine are excluded because there is no detailed, reliable death data for 2024 and 2025, including from the national statistical agencies. HMD deaths end in 2018 for Belarus, 2014 for Russia, and 2013 for Ukraine.
+
+Israel is excluded because its national deaths for 2017 onwards come as two separate series: one with age detail, and one with sex detail. There is no series with both. HMD deaths end in 2016. The national file is therefore not used, and Israel is left out of the calculations.
 
 Greece (`GRC`) and Slovenia (`SVN`) stay in the study. HMD deaths for both end in 2019. Combined population, exposure, and `data.csv.zip` include only countries that remain in the HMD study list.
 
