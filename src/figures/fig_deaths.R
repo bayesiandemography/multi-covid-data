@@ -10,7 +10,7 @@ suppressPackageStartupMessages({
 
 cmd_assign(
   .deaths = "out/figures/vals_deaths.rds",
-  year_min = 2000L,
+  year_min = 1960L,
   .out = "out/figures/fig_deaths.pdf"
 )
 

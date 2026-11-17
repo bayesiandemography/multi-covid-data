@@ -1,14 +1,10 @@
-YEAR_MIN := 1970
+YEAR_MIN := 1960
 YEAR_MAX := 2025
-YEAR_REQUIRED_HMD := 2019
-YEAR_MIN_WPP := 2000
-YEAR_MAX_WPP := 2026
-YEAR_REQUIRED_STMF := 2025
+# 1 January after the last year, so exposure exists for YEAR_MAX.
+YEAR_MAX_POPULATION := $(shell expr $(YEAR_MAX) + 1)
 WEEK_REQUIRED_STMF := 52
-YEAR_MIN_STMF := 2020
-YEAR_MAX_STMF := 2025
 
-.PHONY: all clean .COPY
+.PHONY: all clean .COPY nso
 
 all: out/data.csv.zip \
      out/figures/fig_population.pdf \
@@ -33,7 +29,7 @@ out/hmd/lifeexp_raw.rds: src/hmd/lifeexp_raw.R \
 out/hmd/countries.rds: src/hmd/countries.R \
   out/hmd/deaths_raw.rds \
   data/hmd/countries.csv
-	Rscript $^ $@ --year_required=$(YEAR_REQUIRED_HMD)
+	Rscript $^ $@
 
 out/hmd/deaths.rds: src/hmd/deaths.R \
   out/hmd/deaths_raw.rds \
@@ -60,23 +56,23 @@ out/stmf/deaths_raw.rds: src/stmf/deaths_raw.R \
 out/stmf/countries.rds: src/stmf/countries.R \
   data/stmf/countries.csv \
   data/stmf/STMFinput-2.zip
-	Rscript $^ $@ --year_required=$(YEAR_REQUIRED_STMF) --week_required=$(WEEK_REQUIRED_STMF)
+	Rscript $^ $@ --year_required=$(YEAR_MAX) --week_required=$(WEEK_REQUIRED_STMF)
 
 out/stmf/deaths.rds: src/stmf/deaths.R \
   out/stmf/deaths_raw.rds \
   out/stmf/countries.rds
-	Rscript $^ $@ --year_min=$(YEAR_MIN_STMF) --year_max=$(YEAR_MAX_STMF)
+	Rscript $^ $@ --year_min=$(YEAR_MIN) --year_max=$(YEAR_MAX)
 
 
 ## wpp
 
 out/wpp/popn_est_raw.rds: src/wpp/popn_est_raw.R \
   data/wpp/WPP2024_Population1JanuaryBySingleAgeSex_Medium_1950-2023.gz
-	Rscript $^ $@ --year_min=$(YEAR_MIN_WPP)
+	Rscript $^ $@ --year_min=$(YEAR_MIN)
 
 out/wpp/popn_proj_raw.rds: src/wpp/popn_proj_raw.R \
   data/wpp/WPP2024_Population1JanuaryBySingleAgeSex_Medium_2024-2100.gz
-	Rscript $^ $@ --year_max=$(YEAR_MAX_WPP)
+	Rscript $^ $@ --year_max=$(YEAR_MAX_POPULATION)
 
 out/wpp/population.rds: src/wpp/population.R \
   out/wpp/popn_est_raw.rds \
@@ -89,12 +85,13 @@ out/wpp/population.rds: src/wpp/population.R \
 out/population.rds: src/population.R \
   out/hmd/population.rds \
   out/wpp/population.rds
-	Rscript $^ $@ --year_min=$(YEAR_MIN) --year_max=$(YEAR_MAX_WPP)
+	Rscript $^ $@ --year_min=$(YEAR_MIN) --year_max=$(YEAR_MAX_POPULATION)
 
 out/deaths.rds: src/deaths.R \
   out/hmd/deaths.rds \
-  out/stmf/deaths.rds
-	Rscript $^ $@ --year_min=$(YEAR_MIN) --year_max=$(YEAR_MAX_STMF)
+  out/stmf/deaths.rds \
+  out/nso/deaths.rds
+	Rscript $^ $@ --year_min=$(YEAR_MIN) --year_max=$(YEAR_MAX)
 
 out/exposure.rds: src/exposure.R \
   out/population.rds
@@ -121,20 +118,71 @@ out/figures/vals_population.rds: src/figures/vals_population.R \
 out/figures/vals_deaths.rds: src/figures/vals_deaths.R \
   out/hmd/deaths.rds \
   out/stmf/deaths.rds
-	Rscript $^ $@ --year_min=$(YEAR_MIN) --year_max=$(YEAR_MAX_STMF)
+	Rscript $^ $@ --year_min=$(YEAR_MIN) --year_max=$(YEAR_MAX)
 
 out/figures/fig_population.pdf: src/figures/fig_population.R \
   out/figures/vals_population.rds
-	Rscript $^ $@ --year_min=$(YEAR_MIN_WPP)
+	Rscript $^ $@ --year_min=$(YEAR_MIN)
 
 out/figures/fig_deaths.pdf: src/figures/fig_deaths.R \
   out/figures/vals_deaths.rds
-	Rscript $^ $@ --year_min=$(YEAR_MIN_WPP)
+	Rscript $^ $@ --year_min=$(YEAR_MIN)
 
 out/figures/fig_death_rates.pdf: src/figures/fig_death_rates.R \
   out/figures/vals_deaths.rds \
   out/exposure.rds
 	Rscript $^ $@ --year_min=$(YEAR_MIN) --year_max=$(YEAR_MAX)
+
+
+## nso
+
+out/nso/canada.rds: src/nso/canada.R \
+  data/nso/13100768-eng.zip
+	Rscript $^ $@
+
+out/nso/hong_kong.rds: src/nso/hong_kong.R \
+  data/nso/get.php
+	Rscript $^ $@
+
+out/nso/ireland.rds: src/nso/ireland.R \
+  data/nso/VSA29.20260827020459.csv \
+  data/nso/VSA07.20260827020411.csv
+	Rscript $^ $@
+
+out/nso/israel.rds: src/nso/israel.R \
+  data/nso/p-1.xlsx
+	Rscript $^ $@
+
+out/nso/japan.rds: src/nso/japan.R \
+  data/nso/R7toukeihyou.xlsx
+	Rscript $^ $@
+
+out/nso/korea.rds: src/nso/korea.R \
+  data/nso/2025%EB%85%84+%EC%B6%9C%EC%83%9D.%EC%82%AC%EB%A7%9D%ED%86%B5%EA%B3%84%28%EC%9E%A0%EC%A0%95%29.pdf
+	Rscript $^ $@
+
+out/nso/taiwan.rds: src/nso/taiwan.R \
+  data/nso/114%e5%b9%b4%e5%b9%b4%e9%bd%a1%e5%88%a5%e7%b5%b1%e8%a8%881150622.xlsx
+	Rscript $^ $@
+
+out/nso/deaths.rds: src/nso/deaths.R \
+  out/nso/canada.rds \
+  out/nso/hong_kong.rds \
+  out/nso/ireland.rds \
+  out/nso/japan.rds \
+  out/nso/korea.rds \
+  out/nso/taiwan.rds \
+  out/hmd/countries.rds
+	Rscript $^ $@ --year_min=$(YEAR_MIN) --year_max=$(YEAR_MAX)
+
+nso: out/nso/canada.rds \
+     out/nso/hong_kong.rds \
+     out/nso/ireland.rds \
+     out/nso/israel.rds \
+     out/nso/japan.rds \
+     out/nso/korea.rds \
+     out/nso/taiwan.rds \
+     out/nso/deaths.rds
 
 
 ## clean

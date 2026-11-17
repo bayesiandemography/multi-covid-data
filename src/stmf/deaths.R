@@ -10,7 +10,7 @@ cmd_assign(
   .deaths_raw = "out/stmf/deaths_raw.rds",
   .countries = "out/stmf/countries.rds",
   .out = "out/stmf/deaths.rds",
-  year_min = 2020L,
+  year_min = 1960L,
   year_max = 2025L
 )
 

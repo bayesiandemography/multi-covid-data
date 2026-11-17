@@ -11,7 +11,8 @@ suppressPackageStartupMessages({
 cmd_assign(
   .hmd_deaths = "out/hmd/deaths.rds",
   .stmf_deaths = "out/stmf/deaths.rds",
-  year_min = 1970L,
+  .nso_deaths = "out/nso/deaths.rds",
+  year_min = 1960L,
   year_max = 2025L,
   .out = "out/deaths.rds"
 )
@@ -154,7 +155,49 @@ stmf_out <- stmf_fill_years |>
   pull(rows) |>
   list_rbind()
 
-out <- bind_rows(hmd_out, stmf_out) |>
+nso <- read_rds(.nso_deaths) |>
+  filter(
+    year_min <= year,
+    year <= year_max,
+    country %in% unique(hmd_raw$country)
+  ) |>
+  transmute(
+    country,
+    year,
+    sex,
+    age = as.character(age),
+    deaths = count
+  )
+
+covered_years <- bind_rows(
+  hmd_out |> distinct(country, year),
+  stmf_out |> distinct(country, year)
+)
+
+nso_fill_years <- nso |>
+  distinct(country, year) |>
+  anti_join(covered_years, by = c("country", "year"))
+
+nso_out <- nso_fill_years |>
+  mutate(
+    rows = map2(
+      country,
+      year,
+      \(country_i, year_i) {
+        piece <- nso |>
+          filter(country == country_i, year == year_i)
+        piece |>
+          mutate(
+            age = factor(age, levels = unique(piece$age)),
+            source = "nso"
+          )
+      }
+    )
+  ) |>
+  pull(rows) |>
+  list_rbind()
+
+out <- bind_rows(hmd_out, stmf_out, nso_out) |>
   arrange(country, year, sex, age)
 
 dir.create(dirname(.out), recursive = TRUE, showWarnings = FALSE)

@@ -4,3 +4,5 @@ data/wpp/WPP2024_Population1JanuaryBySingleAgeSex_Medium_2024-2100.gz filter=lfs
 data/hmd/deaths.zip filter=lfs diff=lfs merge=lfs -text
 data/hmd/lifeexp.zip filter=lfs diff=lfs merge=lfs -text
 data/hmd/population.zip filter=lfs diff=lfs merge=lfs -text
+data/nso/VSA29.20260827020459.csv filter=lfs diff=lfs merge=lfs -text
+data/nso/VSA07.20260827020411.csv filter=lfs diff=lfs merge=lfs -text

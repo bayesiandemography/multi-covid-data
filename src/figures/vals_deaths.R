@@ -11,7 +11,7 @@ suppressPackageStartupMessages({
 cmd_assign(
   .hmd_deaths = "out/hmd/deaths.rds",
   .stmf_deaths = "out/stmf/deaths.rds",
-  year_min = 1970L,
+  year_min = 1960L,
   year_max = 2025L,
   .out = "out/figures/vals_deaths.rds"
 )

@@ -112,9 +112,9 @@ flowchart LR
 | STMF | `data/stmf/` | Weekly mortality (`STMFinput-2.zip`), aggregated to annual totals |
 | WPP | `data/wpp/` | Population by single age and sex, 1 January (medium variant); counts stored in thousands |
 
-Year windows and coverage gates are set in the [Makefile parameters](#makefile-parameters).
+The year window is set in the [Makefile parameters](#makefile-parameters).
 WPP population is restricted to HMD study countries when building combined
-population; STMF fills deaths only for country–years without HMD.
+population. For each country–year, deaths come from HMD, then STMF, then NSO.
 
 ### Country maps
 
@@ -131,13 +131,13 @@ countries only.
 | `out/hmd/countries.rds` | Filtered HMD source → target map |
 | `out/stmf/countries.rds` | Filtered STMF source → target map |
 
-`src/hmd/countries.R` applies `data/hmd/countries.csv` and `YEAR_REQUIRED_HMD`,
-and writes `out/hmd/countries.rds`. HMD deaths / population / lifeexp use that
-map only.
+`src/hmd/countries.R` applies `data/hmd/countries.csv` and writes
+`out/hmd/countries.rds`. HMD deaths / population / lifeexp use that map only.
 
 `src/stmf/countries.R` applies `data/stmf/countries.csv` and keeps sources with
-week coverage through `WEEK_REQUIRED_STMF` of `YEAR_REQUIRED_STMF`, writing
-`out/stmf/countries.rds`. STMF deaths use that map only (plus a year window).
+week coverage through `WEEK_REQUIRED_STMF` of `YEAR_MAX`, writing
+`out/stmf/countries.rds`. STMF deaths use that map only, within `YEAR_MIN` to
+`YEAR_MAX`.
 
 #### Columns (`countries.csv`)
 
@@ -152,11 +152,10 @@ week coverage through `WEEK_REQUIRED_STMF` of `YEAR_REQUIRED_STMF`, writing
 - **Rename** — `target` is a different non-empty code (e.g. `FRATNP`,`FRA`).
 - **Merge** — two or more rows share the same non-empty `target` (e.g. HMD
   `DEUTE` and `DEUTW` both → `DEU`).
-- **Drop** — `target` is empty (blank cell). That source is excluded.
+- **Drop** — `target` is empty (blank cell). That source is excluded. Belarus (`BLR`), Russia (`RUS`), Ukraine (`UKR`), and Israel (`ISR`) are blank for the reasons in [Excluded countries](#excluded-countries).
 
-Only rows with a non-empty `target` are kept. For HMD, targets whose last
-observed year in deaths is before `YEAR_REQUIRED_HMD` are also dropped. For
-STMF, sources lacking the required week in the required year are dropped.
+Only rows with a non-empty `target` are kept. For STMF, sources lacking week
+`WEEK_REQUIRED_STMF` of `YEAR_MAX` are also dropped.
 
 ## Combined series
 
@@ -168,11 +167,13 @@ use WPP × 1000 scaled to the latest overlapping HMD level by country–sex–ag
 converted from thousands). `population` is the scaled series. `source` is
 `hmd` or `wpp` for that 1 January stock.
 
-**Deaths** (`deaths.rds`) — Prefer HMD for each country–year. Where HMD is
-absent, use STMF for that year, choosing the finest complete age partition
-with an open terminal group (validated with `agetime`). Column `source` is
-`hmd` or `stmf`. Age labels can differ across country–years. Counts are not
-rounded here.
+**Deaths** (`deaths.rds`) — For each country–year, use the first source that
+has it: HMD, then STMF, then NSO. STMF keeps the published age partition
+after dropping totals, subtotals, and a closed group that overlaps an open
+group (validated with `agetime`). NSO keeps the published ages of male and
+female only. A later source does not fill a sex or age inside a year an
+earlier source already covers. Column `source` is `hmd`, `stmf`, or `nso`.
+Counts are not rounded here.
 
 **Exposure** (`exposure.rds`) — Mid-year person-years
 `0.5 * (pop_t + pop_{t+1})` from the scaled population, only where consecutive
@@ -183,6 +184,9 @@ has no exposure row.
 
 ## Analysis product
 
+The principles used to construct this file are in
+[docs/data.md](docs/data.md).
+
 `out/data.csv.zip` is the modelling-facing deliverable. The archive contains
 one CSV, `data.csv`, that `readr::read_csv()` can read directly. It is a full
 join of deaths and exposure on `country`, `year`, `sex`, and `age`, so a row
@@ -190,14 +194,14 @@ is kept when either series is present.
 
 | file | Years | Columns | Notes |
 |------|-------|---------|--------|
-| `data.csv.zip` | All years in deaths or exposure | `country`, `year`, `sex`, `age`, `deaths`, `exposure`, `deaths_source`, `population_source` | Deaths rounded in every year. Exposure is the scaled series. `deaths_source` is `hmd` or `stmf` (missing when the row has no deaths). `population_source` is `hmd`, `wpp`, or `mixed` (missing when the row has no exposure). |
+| `data.csv.zip` | All years in deaths or exposure | `country`, `year`, `sex`, `age`, `deaths`, `exposure`, `deaths_source`, `population_source` | Deaths rounded in every year. Exposure is the scaled series. `deaths_source` is `hmd`, `stmf`, or `nso` (missing when the row has no deaths). `population_source` is `hmd`, `wpp`, or `mixed` (missing when the row has no exposure). |
 
 ## Validation figures
 
 | PDF | Checks |
 |-----|--------|
-| `fig_population.pdf` | HMD vs WPP population by country–sex, age facets, from `YEAR_MIN_WPP` |
-| `fig_deaths.pdf` | HMD vs STMF death counts (HMD coarsened to STMF ages), from `YEAR_MIN_WPP` |
+| `fig_population.pdf` | HMD vs WPP population by country–sex, age facets, from `YEAR_MIN` |
+| `fig_deaths.pdf` | HMD vs STMF death counts (HMD coarsened to STMF ages), from `YEAR_MIN` |
 | `fig_death_rates.pdf` | HMD vs STMF rates using scaled exposure from `out/exposure.rds` for every year |
 
 Figure-only intermediates live under `out/figures/` as `vals_population.rds`
@@ -207,29 +211,18 @@ and `vals_deaths.rds`. They are not part of `data.csv.zip`.
 
 | Variable | Default | Role |
 |----------|---------|------|
-| `YEAR_MIN` | 1970 | Lower bound for combined deaths / population assembly |
-| `YEAR_MAX` | 2025 | (Reserved; combined deaths use `YEAR_MAX_STMF`) |
-| `YEAR_REQUIRED_HMD` | 2019 | HMD country kept only if last deaths year ≥ this |
-| `YEAR_MIN_WPP` | 2000 | WPP estimate extract start; population figure `year_min` |
-| `YEAR_MAX_WPP` | 2026 | WPP projection extract end; combined population upper year |
-| `YEAR_REQUIRED_STMF` | 2025 | STMF country must have data in this year |
-| `WEEK_REQUIRED_STMF` | 52 | …through at least this week |
-| `YEAR_MIN_STMF` | 2020 | Processed STMF deaths lower year |
-| `YEAR_MAX_STMF` | 2025 | Processed STMF / combined deaths upper year |
+| `YEAR_MIN` | 1960 | First year for deaths, population, exposure, and the source extracts that feed them |
+| `YEAR_MAX` | 2025 | Last year for deaths and exposure. STMF countries must include this year |
+| `YEAR_MAX_POPULATION` | 2026 | Derived as `YEAR_MAX + 1`. Last 1 January population, from WPP projections and the combined population |
+| `WEEK_REQUIRED_STMF` | 52 | STMF country must reach this week of `YEAR_MAX` |
 
 ## Excluded countries
 
-**Israel (`ISR`)** is listed in both `data/hmd/countries.csv` and
-`data/stmf/countries.csv`, and STMF supplies annual deaths for 2020–2025.
-HMD deaths for ISR, however, end in **2016**, which is before
-`YEAR_REQUIRED_HMD` (2019). ISR is therefore dropped from
-`out/hmd/countries.rds` and never enters HMD deaths or population.
+Belarus (`BLR`), Russia (`RUS`), Ukraine (`UKR`), and Israel (`ISR`) are excluded from the study. The exclusion is a blank `target` in [`data/hmd/countries.csv`](data/hmd/countries.csv). Russia and Israel are also blank in [`data/stmf/countries.csv`](data/stmf/countries.csv). Belarus and Ukraine are not in the STMF concordance. A blank cell is easy to miss, so the reasons are written here and in [docs/data.md](docs/data.md).
 
-Combined population (and thus exposure and `data.csv.zip`) is restricted to
-HMD study countries, so ISR also has no scaled exposure for rate figures.
-By contrast, Greece (`GRC`) and Slovenia (`SVN`) pass the 2019 HMD gate
-(HMD deaths through 2019) and are included even though their HMD series stop
-before 2020.
+Belarus, Russia, and Ukraine are excluded because there is no detailed, reliable death data for 2024 and 2025, including from the national statistical agencies. HMD deaths end in 2018 for Belarus, 2014 for Russia, and 2013 for Ukraine. Israel is excluded because HMD deaths end in 2016.
+
+Greece (`GRC`) and Slovenia (`SVN`) stay in the study. HMD deaths for both end in 2019. Combined population, exposure, and `data.csv.zip` include only countries that remain in the HMD study list.
 
 ## Data corrections
 

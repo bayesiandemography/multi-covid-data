@@ -10,7 +10,7 @@ suppressPackageStartupMessages({
 
 cmd_assign(
   .population = "out/figures/vals_population.rds",
-  year_min = 2000L,
+  year_min = 1960L,
   .out = "out/figures/fig_population.pdf"
 )
 

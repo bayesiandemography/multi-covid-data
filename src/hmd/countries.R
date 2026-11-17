@@ -9,8 +9,7 @@ suppressPackageStartupMessages({
 cmd_assign(
   .deaths_raw = "out/hmd/deaths_raw.rds",
   .countries = "data/hmd/countries.csv",
-  .out = "out/hmd/countries.rds",
-  year_required = 2019L
+  .out = "out/hmd/countries.rds"
 )
 
 map <- read_csv(
@@ -81,25 +80,8 @@ if (nrow(kept) == 0L) {
   )
 }
 
-study_targets <- deaths |>
-  semi_join(kept, by = c("country" = "source")) |>
-  left_join(kept, by = c("country" = "source")) |>
-  group_by(target) |>
-  summarise(year_last = max(year), .groups = "drop") |>
-  filter(year_last >= year_required) |>
-  pull(target)
-
-if (length(study_targets) == 0L) {
-  stop(
-    "no countries remain after applying countries.csv and year_required=",
-    year_required,
-    call. = FALSE
-  )
-}
-
 # Filtered source → target map for study countries (used by deaths/population/e0).
 out <- kept |>
-  filter(target %in% study_targets) |>
   arrange(source)
 
 dir.create(dirname(.out), recursive = TRUE, showWarnings = FALSE)

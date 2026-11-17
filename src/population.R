@@ -9,7 +9,7 @@ suppressPackageStartupMessages({
 cmd_assign(
   .hmd_population = "out/hmd/population.rds",
   .wpp_population = "out/wpp/population.rds",
-  year_min = 1970L,
+  year_min = 1960L,
   year_max = 2026L,
   .out = "out/population.rds"
 )
